@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Producto;
+use App\Models\Oferta;
 
 class HomeController extends Controller
 {
@@ -24,28 +25,35 @@ class HomeController extends Controller
      */
     public function index()
     {
-    $productos = Producto::all();
-    $otrosProductos = []; 
+        // Obtén los productos desde la base de datos
+        $productos = Producto::all();
+        
+        // Obtén las ofertas especiales (por ejemplo, las 4 primeras ofertas)
+        $ofertasEspeciales = Oferta::take(4)->get();
 
-    return view('home', [
-        'productos' => $productos, 
-        'otrosProductos' => $otrosProductos
-    ]);
+        // Inicializa la variable $otrosProductos (puedes cambiar la lógica si es necesario)
+        $otrosProductos = []; 
+
+        // Pasa las variables a la vista
+        return view('home', [
+            'productos' => $productos, 
+            'otrosProductos' => $otrosProductos,
+            'ofertasEspeciales' => $ofertasEspeciales
+        ]);
     }
 
     public function mostrarProductos()
     {
-    // Obtén los productos desde la base de datos
-    $productos = Producto::all();  // O usa cualquier otra lógica de consulta
-    
-    // Inicializa la variable $otrosProductos
-    $otrosProductos = [];  // O alguna lógica alternativa si es necesario
+        // Lógica similar a la del método index()
+        $productos = Producto::all();
+        $ofertasEspeciales = Oferta::take(4)->get();
+        $otrosProductos = [];
 
-    // Carga la vista y pasa los productos
-    return view('home', [
-        'productos' => $productos, 
-        'otrosProductos' => $otrosProductos
-    ]);
+        return view('home', [
+            'productos' => $productos, 
+            'otrosProductos' => $otrosProductos,
+            'ofertasEspeciales' => $ofertasEspeciales
+        ]);
     }
 
 }

@@ -17,6 +17,8 @@ return new class extends Migration
             $table->text('descripcion')->nullable();
             $table->string('imagen_url')->nullable(); // Campo para la URL de la imagen
             $table->decimal('precio', 8, 2);
+            $table->boolean('es_oferta')->default(false);
+            $table->decimal('precio_oferta', 8, 2)->nullable();
             $table->timestamps();
         });
     }

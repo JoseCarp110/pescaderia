@@ -6,6 +6,7 @@
     <title>{{ config('app.name', 'Pescaderia') }}</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ asset('css/estilos.css') }}" rel="stylesheet">
 </head>
 <body>
     <!-- Encabezado -->
@@ -15,6 +16,44 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Menú de la izquierda -->
+            <ul class="navbar-nav">
+                @if(Auth::check() && Auth::user()->role == 'admin')
+                    <!-- envia al HOME -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('home') }}">Inicio</a>
+                    </li>
+                    <!-- Menú desplegable para Gestión de Usuarios -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUser" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Gestión de Usuarios
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownUser">
+                            <a class="dropdown-item" href="{{ route('usuarios.index') }}">Listar Usuarios</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{{ route('usuarios.create') }}">Agregar Usuarios</a>
+                        </div>
+                    </li>
+                    <!-- Menú desplegable para Gestión de Productos -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownProduct" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Gestión de Productos
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownProduct">
+                            <a class="dropdown-item" href="{{ route('productos.index') }}">Listar Producto</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{{ route('productos.create') }}">Agregar Producto</a>
+                        </div>   
+                    </li>
+                    @elseif(Auth::check() && Auth::user()->role == 'user')
+                    <!-- Sección de Inicio para usuario común -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('home') }}">Inicio</a>
+                    </li>
+                @endif
+            </ul>
+            
+            <!-- Menú de la derecha -->
             <ul class="navbar-nav ml-auto">
                 @guest
                     <li class="nav-item">
@@ -24,12 +63,23 @@
                         <a class="nav-link" href="{{ route('register') }}">Registrarme</a>
                     </li>
                 @else
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                            @csrf
-                        </form>
+                    <!-- Menú desplegable para el usuario -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: white;">
+                            <!-- Mostrar foto de perfil y nombre -->
+                            <img src="{{ Auth::user()->profile_picture ? asset(Auth::user()->profile_picture) : 'https://via.placeholder.com/30' }}" alt="Foto de perfil" class="rounded-circle" width="30" height="30" style="margin-right: 8px;">
+                            {{ Auth::user()->role == 'admin' ? 'Admin' : 'Comun' }} {{ Auth::user()->name }}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="{{ route('usuarios.edit', Auth::user()->id) }}">Editar Perfil</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Cerrar Sesión</a>
+                        </div>
                     </li>
+                    <!-- Formulario de logout -->
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        @csrf
+                    </form>
                 @endguest
             </ul>
         </div>
@@ -40,7 +90,7 @@
     </main>
 
     <!-- Pie de Página -->
-    <footer class="bg-light text-center text-lg-start mt-5">
+    <footer class="bg-light text-center text-lg-start">
         <div class="container p-4">
             <div class="row">
                 <div class="col-md-4">
@@ -69,3 +119,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+
+
+
+

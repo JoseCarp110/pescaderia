@@ -63,10 +63,14 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
+    // Asignar una imagen por defecto
+    $profilePicturePath = 'images/default-profile.png'; // Ruta relativa de la imagen por defecto
+
+    return User::create([
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'password' => Hash::make($data['password']),
+        'profile_picture' => $profilePicturePath, // Guardar la ruta de la imagen por defecto
+    ]);
     }
 }

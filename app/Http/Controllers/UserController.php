@@ -60,14 +60,23 @@ class UserController extends Controller
     if (Auth::user()->role == 'admin' && Auth::user()->id != $usuario->id) {
         $usuario->role = $request->role;
     }
-    // Procesar la foto de perfil si se ha subido una nueva
-    if ($request->hasFile('profile_picture')) {
-        $imageName = time().'.'.$request->profile_picture->extension();
-        $request->profile_picture->move(public_path('images'), $imageName);
-        $usuario->profile_picture = 'images/' . $imageName;
+//--------------------------------------------------------------------------------------------------------------
+  // Procesar la foto de perfil si se ha subido una nueva
+ if ($request->hasFile('profile_picture')) {
+    $imageName = time() . '.' . $request->profile_picture->getClientOriginalExtension();
+    $path = $request->profile_picture->move(public_path('images'), $imageName);
+
+    if ($path) {
+        $usuario->profile_picture = '/images/' . $imageName; // Guarda la ruta en la base de datos
     }
-    $usuario->save();
-    return redirect()->route('usuarios.index')->with('success', 'Usuario actualizado correctamente.');
+}
+//--------------------------------------------------------------------------------------------------------------
+if (!$usuario->profile_picture && $request->hasFile('profile_picture')) {
+    return back()->with('error', 'No se ha podido cargar la imagen.');
+}
+
+$usuario->save();
+return redirect()->route('usuarios.index')->with('success', 'Usuario actualizado correctamente.');
    }
 
 

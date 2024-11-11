@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Producto extends Model
 {
     use HasFactory;
-    protected $fillable = ['nombre', 'descripcion', 'imagen_url', 'precio', 'es_oferta', 'precio_oferta', 'categoria_id'];
+    protected $fillable = ['nombre', 'descripcion', 'imagen_url', 'precio', 'es_oferta', 'precio_oferta', 'categoria_id','cantidad'];
 
     // Relacion con la Tabla Categorias.
     public function categoria()
@@ -16,4 +16,3 @@ class Producto extends Model
     return $this->belongsTo(Categoria::class);
     }
 }
-

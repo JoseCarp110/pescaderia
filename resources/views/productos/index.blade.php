@@ -1,143 +1,133 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row">
-        <!-- Panel de productos -->
-        <div class="col-md-9">
-            <h1 class="text-center my-4">
-                {{ isset($esOferta) && $esOferta ? 'Ofertas Especiales' : 'Listado de Productos' }}
-            </h1>
+<div class="container mt-5">
+    <!-- Buscador y Filtros -->
+    <form action="{{ route('productos.index') }}" method="GET" class="mb-4 d-flex justify-content-center">
+        <input type="text" name="search" class="form-control me-2" placeholder="Buscar productos..." value="{{ old('search', $search ?? '') }}" style="max-width: 400px;">
+        
+        <select name="filter" class="form-control me-2" style="max-width: 200px;">
+            <option value="">Filtrar por</option>
+            <option value="ventas_desc">Más vendidos</option>
+            <option value="precio_asc">Precios más bajos</option>
+            <option value="precio_desc">Precios más caros</option>
+            <option value="categoria_articulos_pesca">Artículos de Pesca</option>
+            <option value="categoria_alimentos">Alimentos</option>
+            <!-- Aquí puedes añadir más categorías según las disponibles -->
+        </select>
 
-            <!-- Mensaje de éxito -->
-            @if(session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
+        <button class="btn btn-primary" type="submit">Buscar</button>
+    </form>
+
+    <!-- Panel de productos con scroll infinito -->
+    <div id="productos-container" class="row gy-4 justify-content-center" style="height: 600px; overflow-y: auto;">
+        @foreach($productos as $producto)
+        <div class="col-lg-3 col-md-4 col-sm-6 producto-item" data-producto-id="{{ $producto->id }}">
+            <div class="card border-0 position-relative producto-card">
+                <div class="producto-img-container">
+                    <img src="{{ $producto->imagen_url }}" class="img-fluid producto-img" alt="{{ $producto->nombre }}" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
-            @endif
+                <div class="producto-info position-absolute w-100 h-100 d-flex align-items-center justify-content-center flex-column">
+                    <h5 class="text-white text-center fw-bold">{{ $producto->nombre }}</h5>
 
-            <!-- Buscador general -->
-            <form action="{{ route('productos.index') }}" method="GET" class="mb-4">
-                <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Buscar productos..." value="{{ old('search', $search ?? '') }}">
-                    <div class="input-group-append">
-                        <button class="btn btn-primary" type="submit">Buscar</button>
-                    </div>
-                </div>
-            </form>
-
-            <!-- Filtros -->
-            <div class="row">
-                <div class="col-md-3 mb-4">
-                    <h4>Filtros</h4>
-
-                    <!-- Filtro por más vendidos -->
-                    <div class="form-group">
-                        <label for="filtro_vendidos">Más Vendidos</label>
-                        <select id="filtro_vendidos" class="form-control" onchange="applyFilter()">
-                            <option value="">Selecciona una opción</option>
-                            <option value="ventas_desc">Más vendidos</option>
-                        </select>
-                    </div>
-
-                    <!-- Filtro por rango de precios -->
-                    <div class="form-group">
-                        <label for="rango_precios">Rango de Precios</label>
-                        <input type="text" id="rango_precios" class="form-control" placeholder="Ej: 10-100" onchange="applyFilter()">
-                    </div>
-
-                    <!-- Filtro por orden de precio -->
-                    <div class="form-group">
-                        <label for="orden_precio">Ordenar por Precio</label>
-                        <select id="orden_precio" class="form-control" onchange="applyFilter()">
-                            <option value="">Selecciona una opción</option>
-                            <option value="precio_asc">Menor a Mayor</option>
-                            <option value="precio_desc">Mayor a Menor</option>
-                        </select>
-                    </div>
-
-                    <!-- Filtro por categoría -->
-                    <div class="form-group">
-                        <label for="filtro_categoria">Categoría</label>
-                        <select id="filtro_categoria" class="form-control" onchange="applyFilter()">
-                            <option value="">Selecciona una categoría</option>
-                            <option value="articulos_pesca">Artículos de Pesca</option>
-                            <option value="alimentos">Alimentos</option>
-                            <!-- Agrega más categorías aquí -->
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Productos -->
-                <div class="col-md-9">
-                    <!-- Listado vertical de productos -->
-                    <div class="row mt-4">
-                        @foreach($productos as $producto)
-                            <div class="col-12 mb-4">
-                                <div class="card flex-row {{ $producto->es_oferta ? 'bg-warning text-white' : '' }}">
-                                    <!-- Imagen del producto -->
-                                    <img class="card-img-left img-fluid" src="{{ $producto->imagen_url }}" alt="{{ $producto->nombre }}" 
-                                        style="width: 150px; height: auto; object-fit: cover; margin: 10px;">
-
-                                    <!-- Detalles del producto -->
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ $producto->nombre }}</h5>
-                                        <p class="card-text">{{ $producto->descripcion }}</p>
-                                        <p class="card-text">
-                                            <strong>Precio:</strong> 
-                                            @if($producto->es_oferta && $producto->precio_oferta)
-                                                <span style="font-size: 1.2em; font-weight: bold;">${{ $producto->precio_oferta }}</span>
-                                                <span class="text-muted" style="text-decoration: line-through;">${{ $producto->precio }}</span>
-                                            @else
-                                                ${{ $producto->precio }}
-                                            @endif
-                                        </p>
-
-                                        <!-- Opciones según el rol -->
-                                        @if(Auth::check() && Auth::user()->role == 'admin')
-                                            <!-- Botones de administrador: Editar y Eliminar -->
-                                            <div class="d-flex justify-content-between">
-                                                <a href="{{ route('productos.edit', $producto->id) }}" class="btn btn-primary">Editar</a>
-                                                <form action="{{ route('productos.destroy', $producto->id) }}" method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que quieres eliminar este producto?')">Eliminar</button>
-                                                </form>
-                                            </div>
-                                        @else
-                                            <!-- Botón de usuario común: Añadir al carrito -->
-                                            <a href="#" class="btn btn-primary">Añadir al carrito</a>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
+                    <div class="mt-2">
+                        @if(Auth::check() && Auth::user()->role == 'admin')
+                            <!-- Botones solo para administradores -->
+                            <a href="{{ route('productos.edit', $producto->id) }}" class="btn btn-warning btn-sm">Editar</a>
+                            <form action="{{ route('productos.destroy', $producto->id) }}" method="POST" style="display: inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?')">Eliminar</button>
+                            </form>
+                        @else
+                            <!-- Botón de "Añadir al carrito" solo para usuarios comunes -->
+                            <a href="#" class="btn btn-primary btn-sm">Añadir al carrito</a>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
+        @endforeach
     </div>
 </div>
 
 <script>
-    function applyFilter() {
-        const vendidos = document.getElementById('filtro_vendidos').value;
-        const precios = document.getElementById('rango_precios').value;
-        const ordenPrecio = document.getElementById('orden_precio').value;
-        const categoria = document.getElementById('filtro_categoria').value;
+// Aplicar efectos de agrandado y mostrar información del producto al pasar el ratón
+function agregarEventosHover() {
+    document.querySelectorAll('.producto-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            const img = card.querySelector('.producto-img');
+            const info = card.querySelector('.producto-info');
+            img.style.transform = 'scale(1.1)';
+            info.style.opacity = 1;
+        });
 
-        let url = new URL(window.location.href);
+        card.addEventListener('mouseleave', () => {
+            const img = card.querySelector('.producto-img');
+            const info = card.querySelector('.producto-info');
+            img.style.transform = 'scale(1)';
+            info.style.opacity = 0;
+        });
+    });
+}
 
-        if (vendidos) url.searchParams.set('vendidos', vendidos);
-        if (precios) url.searchParams.set('precios', precios);
-        if (ordenPrecio) url.searchParams.set('orden_precio', ordenPrecio);
-        if (categoria) url.searchParams.set('categoria', categoria);
+// Llamar a la función al cargar la página para que funcione el hover
+agregarEventosHover();
 
-        window.location.href = url.toString();
+// Scroll infinito para cargar más productos
+let productosContainer = document.getElementById('productos-container');
+productosContainer.addEventListener('scroll', function() {
+    if (productosContainer.scrollTop + productosContainer.clientHeight >= productosContainer.scrollHeight) {
+        cargarMasProductos();
     }
+});
+
+let paginaActual = 1;
+
+function cargarMasProductos() {
+    paginaActual++;
+    fetch(`{{ route('productos.index') }}?page=${paginaActual}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.html) {
+                productosContainer.insertAdjacentHTML('beforeend', data.html);
+                agregarEventosHover(); // Vuelve a agregar eventos a los nuevos productos cargados
+            }
+        });
+}
 </script>
 
+<style>
+#productos-container {
+    scrollbar-width: thin;
+}
+
+.producto-card {
+    overflow: hidden;
+}
+
+.producto-img-container {
+    position: relative;
+    overflow: hidden;
+    height: 200px;
+}
+
+.producto-img {
+    transition: transform 0.3s ease;
+}
+
+.producto-info {
+    opacity: 0;
+    background: rgba(0, 0, 0, 0.6);
+    transition: opacity 0.3s ease;
+}
+</style>
 @endsection
+
+
+
+
+
 
 
 

@@ -8,7 +8,7 @@
         <table class="table table-bordered table-hover">
             <thead class="thead-light">
                 <tr>
-                    <th>ID</th>
+                    <th>Foto</th>
                     <th>Nombre</th>
                     <th>Email</th>
                     <th>Rol</th>
@@ -19,7 +19,14 @@
             <tbody>
                 @foreach($usuarios as $usuario)
                 <tr>
-                    <td>{{ $usuario->id }}</td>
+                    <td>
+                        <!-- Mostrar la foto del usuario -->
+                        @if($usuario->profile_picture)
+                            <img src="{{ asset($usuario->profile_picture) }}" alt="Foto de perfil" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                        @else
+                            <img src="https://via.placeholder.com/50" alt="Sin imagen" class="img-thumbnail">
+                        @endif
+                    </td>
                     <td>{{ $usuario->name }}</td>
                     <td>{{ $usuario->email }}</td>
                     <td>{{ $usuario->role }}</td>
@@ -40,3 +47,4 @@
     </div>
 </div>
 @endsection
+

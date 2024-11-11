@@ -6,6 +6,8 @@ use App\Http\Controllers\ProductosController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OfertaController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\CarritoController;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -40,9 +42,22 @@ Route::middleware(['auth'])->group(function () {
     // Ruta para que usuarios comunes editen sus propios datos
     Route::get('/usuarios/{id}/edit', [UserController::class, 'edit'])->name('usuarios.edit');
     Route::put('/usuarios/{id}', [UserController::class, 'update'])->name('usuarios.update'); // Actualiza los usuarios editados
+
+    // Rutas para el carrito
+    Route::get('/carrito', [CarritoController::class, 'index'])->name('carrito.index');
+    Route::post('/carrito/agregar/{producto}', [CarritoController::class, 'agregar'])->name('carrito.agregar');
+    Route::post('/carrito/actualizar/{producto}', [CarritoController::class, 'actualizar'])->name('carrito.actualizar');
+    Route::post('/carrito/eliminar/{producto}', [CarritoController::class, 'eliminar'])->name('carrito.eliminar');
+    Route::get('/checkout', [PedidoController::class, 'checkout'])->name('pedidos.checkout');
+    Route::get('/producto/{id}', [ProductosController::class, 'mostrarDetalle'])->name('producto.detalle');
+    //Ruta que se utiliza para actualizar el numero de productos en el carrito en tiempo real.
+    Route::get('/carrito/contador', function () {
+        return response()->json(['count' => Cart::getContent()->count()]);
+    })->name('carrito.contador');
 });
 
-// RUTAS PROTEGIDAS PARA LOS ADMINISTRADORES
+
+// RUTAS PROTEGIDAS PARA LOS ADMINISTRADORES ****************************************************************************************************
 Route::middleware(['auth', 'role:admin'])->group(function () {
     // Rutas para Gestión de PRODUCTOS
     Route::get('/productos/create', [ProductosController::class, 'create'])->name('productos.create'); // Vista para crear productos
@@ -51,7 +66,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('/productos/{id}', [ProductosController::class, 'update'])->name('productos.update'); // Actualiza los datos editados en la BD
     Route::delete('/productos/{id}', [ProductosController::class, 'destroy'])->name('productos.destroy'); // Eliminar producto
 
-    // Rutas para Gestión de USUARIOS (Solo accesibles para administradores)
+    // Rutas para Gestión de USUARIOS (Solo accesibles para administradores) ************************************************************************
     Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index'); // Lista los usuarios existentes en la base
     Route::get('/usuarios/create', [UserController::class, 'create'])->name('usuarios.create'); // Crear nuevo usuario
     Route::post('/usuarios', [UserController::class, 'store'])->name('usuarios.store'); // Almacenar nuevo usuario
@@ -63,4 +78,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Rutas para Ofertas
     Route::post('/ofertas', [OfertaController::class, 'store'])->name('ofertas.store'); // almacenar productos en ofertas
+
+    // Rutas para Pedidos
+    Route::get('/pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
+
+
 });

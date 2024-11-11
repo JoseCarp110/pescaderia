@@ -32,6 +32,7 @@ class ProductosController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'precio' => 'required|numeric',
+            'cantidad' => 'required|integer|min:0',
             'imagen' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'es_oferta' => 'nullable|boolean', // Validación para el campo es_oferta
             'precio_oferta' => 'nullable|numeric|lt:precio', // Validación para el campo precio_oferta, menor que precio
@@ -48,11 +49,16 @@ class ProductosController extends Controller
                 'nombre' => $request->nombre,
                 'descripcion' => $request->descripcion,
                 'precio' => $request->precio,
+                'cantidad' => $request->cantidad,
                 'imagen_url' => '/images/' . $imageName,
                 'es_oferta' => $request->has('es_oferta') ? true : false, // Guarda si es una oferta o no
                 'precio_oferta' => $request->precio_oferta, // Guarda el precio de oferta si está presente
                 'categoria_id' => $request->categoria_id,
             ]);
+        }
+
+        if (!$request->file('imagen')->isValid()) {
+            return back()->with('error', 'Error al subir la imagen');
         }
     
         // Redirigir a la página de productos o mostrar un mensaje de éxito
@@ -137,6 +143,10 @@ public function update(Request $request, $id)
         $producto->imagen_url = '/images/' . $imageName; // Actualizar el nombre del campo a 'imagen_url'
     }
 
+    if (!$request->file('imagen')->isValid()) {
+        return back()->with('error', 'Error al subir la imagen');
+    }
+
     $producto->save();
 
     return redirect()->route('productos.index')->with('success', 'Producto actualizado correctamente.');
@@ -158,5 +168,14 @@ public function mostrarOfertas()
     return view('productos.index', ['productos' => $productos, 'esOferta' => true]);
 }
 
+// Metodo para mostrar detalle del producto antes de agregarlo al carrito.
+public function mostrarDetalle($id)
+{
+    $producto = Producto::find($id);
+    if (!$producto) {
+        return redirect()->route('productos.index')->with('error', 'Producto no encontrado');
+    }
+    return view('productos.detalle', compact('producto'));
+}
 
 }

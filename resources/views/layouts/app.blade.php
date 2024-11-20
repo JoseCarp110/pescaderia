@@ -71,8 +71,10 @@
                     <li class="nav-item">
                        <a class="nav-link" href="{{ route('carrito.index') }}">
                          <i class="fas fa-shopping-cart"></i>
-                         <span class="badge badge-pill badge-danger">{{ Cart::getContent()->count() }}</span> <!-- Ahora cuenta los productos correctamente -->
-                       </a>
+                          <!-- Ahora cuenta los productos correctamente -->
+                         <span id="carrito-contador" class="badge badge-pill badge-danger">{{ session()->has('carrito') ? count(session('carrito')) : 0 }}</span>
+
+                        </a>
                     </li>
 
                     <!-- Menú desplegable para el usuario -->
@@ -125,18 +127,31 @@
 
     <script>
         function actualizarContadorCarrito() {
-            fetch('{{ route('carrito.contador') }}')
-                .then(response => response.json())
-                .then(data => {
-                    document.querySelector('.badge-danger').textContent = data.count;
-                })
-                .catch(error => console.error('Error al obtener el contador del carrito:', error));
+           const contadorElemento = document.querySelector('#carrito-contador');
+
+             if (!contadorElemento) {
+               console.error('No se encontró el elemento del contador del carrito.');
+             return;
+             }
+
+             fetch('{{ route('carrito.contador') }}')
+             .then(response => response.json())
+             .then(data => {
+                // Actualiza el contador solo si la respuesta es válida
+             if (data && typeof data.count === 'number') {
+                contadorElemento.textContent = data.count;
+             }
+            })
+             .catch(error => console.error('Error al obtener el contador del carrito:', error));
         }
+
     
-        // Llama a la función cuando la página cargue
-        document.addEventListener('DOMContentLoaded', function() {
+          document.addEventListener('DOMContentLoaded', function () {
+            // Llama a la función solo si el usuario está autenticado
+          @auth
             actualizarContadorCarrito();
-        });
+          @endauth
+         });
     
         // Opcional: puedes llamar a esta función cada vez que se agregue o elimine un producto.
     </script>

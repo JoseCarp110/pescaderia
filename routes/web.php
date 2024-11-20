@@ -52,7 +52,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/producto/{id}', [ProductosController::class, 'mostrarDetalle'])->name('producto.detalle');
     //Ruta que se utiliza para actualizar el numero de productos en el carrito en tiempo real.
     Route::get('/carrito/contador', function () {
-        return response()->json(['count' => Cart::getContent()->count()]);
+        $carrito = session()->get('carrito', []);
+        return response()->json(['count' => count($carrito)]);
     })->name('carrito.contador');
 });
 

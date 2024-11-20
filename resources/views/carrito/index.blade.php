@@ -31,7 +31,14 @@
                         </td>
                         <td>${{ $producto['precio'] }}</td>
                         <td>
-                            <input type="number" name="cantidad" class="form-control cantidad-input" value="{{ $producto['cantidad'] }}" min="1" data-precio="{{ $producto['precio'] }}" style="width: 60px;">
+                            <input 
+                                type="number" 
+                                name="cantidad" 
+                                class="form-control cantidad-input text-center" 
+                                value="{{ $producto['cantidad'] }}" 
+                                min="1" 
+                                data-precio="{{ $producto['precio'] }}" 
+                                style="width: 80px; margin: 0 auto;">
                         </td>
                         <td class="subtotal">${{ $producto['precio'] * $producto['cantidad'] }}</td>
                         <td>
@@ -50,7 +57,53 @@
     @endif
 </div>
 
+<style>
+    /* Centrar el input en la celda */
+    .cantidad-input {
+        text-align: center;
+    }
+
+    /* Ocultar flechas de inputs tipo number */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    input[type="number"] {
+        -moz-appearance: textfield; /* Firefox */
+    }
+</style>
+
 <script>
+    // Manejar la actualización de la cantidad
+    document.querySelectorAll('.cantidad-input').forEach(input => {
+        input.addEventListener('input', function() {
+            // Validar solo números
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        input.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                const fila = this.closest('tr');
+                const precio = parseFloat(this.dataset.precio);
+                const cantidad = parseInt(this.value) || 1; // Asegurar un mínimo de 1
+                const subtotal = precio * cantidad;
+
+                // Actualizar subtotal
+                fila.querySelector('.subtotal').textContent = `$${subtotal.toFixed(2)}`;
+
+                // Recalcular total
+                let total = 0;
+                document.querySelectorAll('.cantidad-input').forEach(input => {
+                    const precio = parseFloat(input.dataset.precio);
+                    const cantidad = parseInt(input.value) || 1;
+                    total += precio * cantidad;
+                });
+                document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+            }
+        });
+    });
+
     function eliminarDelCarrito(productoId) {
         fetch(`/carrito/eliminar/${productoId}`, {
             method: 'POST',
@@ -89,5 +142,6 @@
 </script>
 
 @endsection
+
 
 
